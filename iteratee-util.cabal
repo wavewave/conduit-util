@@ -1,12 +1,12 @@
 Name:		iteratee-util
-Version:	0.0
+Version:	0.0.1
 Synopsis:	utility functions for iteratee library
 Description: 	utility functions for iteratee library 
 License: 	BSD3
 License-file:	LICENSE
 Author:		Ian-Woo Kim
 Maintainer: 	Ian-Woo Kim <ianwookim@gmail.com>
-Build-Depends:	base>4, ListLike, iteratee>0.4, transformers
+Build-Depends:	base>4, ListLike, iteratee>0.4, transformers, monads-tf
 Build-Type: 	Simple
 
 hs-source-dirs: src

@@ -6,6 +6,8 @@ module Data.Iteratee.Util where
 import Data.ListLike as LL 
 import Data.Iteratee.ListLike 
 import Data.Iteratee as Iter
+
+import Control.Monad.State
 import Control.Monad.IO.Class
 
 
@@ -64,6 +66,23 @@ count = Iter.length
 jn = Iter.joinI
 
 filtre = Iter.filter 
+
+
+-- | Splice a list every 100 elements
+splice100 :: (Monad m) => [a] -> Enumerator [a] m b
+splice100 lst = enumPureNChunk lst 100 
+
+-- | Feed a state in the beginning of iteratee operation and run it 
+runIterWithState :: Monad m => 
+                    st -> (StateT st m) (Iteratee s (StateT st m) a) -> m a 
+runIterWithState st x = (flip evalStateT) st $ run . joinIM $ x
+
+  
+-- | Showing progress in terms of number of events processed.  
+workWithCounter :: (Monad m, MonadIO m) => 
+                Iteratee [s] m a -> Iteratee [s] m (a,()) 
+workWithCounter iter = iter <+> count_marker 1000 0 
+
 
 
 --data ShowObj = forall a. (Show a) => ShowObj a
