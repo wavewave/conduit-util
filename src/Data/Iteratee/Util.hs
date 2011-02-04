@@ -7,7 +7,7 @@ import Data.ListLike as LL
 import Data.Iteratee.ListLike 
 import Data.Iteratee as Iter
 
-import Control.Monad.State
+import Control.Monad.State hiding (liftIO, MonadIO)
 import Control.Monad.IO.Class
 
 
@@ -67,6 +67,11 @@ jn = Iter.joinI
 
 filtre = Iter.filter 
 
+-- | iterTransformer version of Iteratee.take 
+takeFirstNElem :: (Monad m, MonadIO m, LL.ListLike s el, Nullable s) =>
+             Int -> Iteratee s m a -> Iteratee s m a 
+takeFirstNElem n = jn . (Iter.take n)
+
 
 -- | Splice a list every 100 elements
 splice100 :: (Monad m) => [a] -> Enumerator [a] m b
@@ -84,9 +89,31 @@ workWithCounter :: (Monad m, MonadIO m) =>
 workWithCounter iter = iter <+> count_marker 1000 0 
 
 
+tupleToList2 ((n1,n2),()) = [n1,n2]
 
---data ShowObj = forall a. (Show a) => ShowObj a
+tupleToList3 (((n1,n2),n3),()) =[n1,n2,n3]
 
---type S a () = (a,()) 
+{-
+tupletolist9 (((((((((n1,n2),n3),n4),n5),n6),n7),n8),n9),())
+  = [n1,n2,n3,n4,n5,n6,n7,n8,n9]
 
---mkShowObjList :: (Show a, Show b, Show c) => (a,b) -> [ShowObj]
+tupletolist9 (((((((((n1,n2),n3),n4),n5),n6),n7),n8),n9),())
+  = [n1,n2,n3,n4,n5,n6,n7,n8,n9]
+
+tupletolist9 (((((((((n1,n2),n3),n4),n5),n6),n7),n8),n9),())
+  = [n1,n2,n3,n4,n5,n6,n7,n8,n9]
+
+tupletolist9 (((((((((n1,n2),n3),n4),n5),n6),n7),n8),n9),())
+  = [n1,n2,n3,n4,n5,n6,n7,n8,n9]
+
+tupletolist9 (((((((((n1,n2),n3),n4),n5),n6),n7),n8),n9),())
+  = [n1,n2,n3,n4,n5,n6,n7,n8,n9]
+
+tupletolist9 (((((((((n1,n2),n3),n4),n5),n6),n7),n8),n9),())
+  = [n1,n2,n3,n4,n5,n6,n7,n8,n9] -}
+
+
+tupleToList9 (((((((((n1,n2),n3),n4),n5),n6),n7),n8),n9),())
+  = [n1,n2,n3,n4,n5,n6,n7,n8,n9]
+
+
