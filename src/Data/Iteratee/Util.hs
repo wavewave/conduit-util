@@ -63,6 +63,13 @@ count = Iter.length
 
 (<+>) = Iter.enumPair 
 
+(<:>) :: (Monad m) => Iter.Iteratee [s] m a -> Iter.Iteratee [s] m [a] 
+         -> Iter.Iteratee [s] m [a]
+(<:>) iter1 iter2 = do 
+  (x,xs) <- Iter.enumPair iter1 iter2 
+  return (x:xs)
+
+
 jn = Iter.joinI
 
 filtre = Iter.filter 
