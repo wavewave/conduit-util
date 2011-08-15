@@ -1,12 +1,12 @@
-Name:		iteratee-util
-Version:	0.0.2.0
-Synopsis:	utility functions for iteratee library
-Description: 	utility functions for iteratee library 
+Name:		enumerator-util
+Version:	0.0
+Synopsis:	utility functions for enumerator library
+Description: 	utility functions for enumerator library 
 License: 	BSD3
 License-file:	LICENSE
 Author:		Ian-Woo Kim
 Maintainer: 	Ian-Woo Kim <ianwookim@gmail.com>
-Build-Depends:	base>4, ListLike, iteratee>0.4, transformers, mtl>2
+Build-Depends:	base>4, enumerator>0.4, mtl>2
 Build-Type: 	Simple
 
 hs-source-dirs: src
@@ -14,5 +14,5 @@ ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
 ghc-prof-options: -caf-all -auto-all
 
 Exposed-Modules: 
-                 Data.Iteratee.Util
+                 Data.Enumerator.Util
 		 
