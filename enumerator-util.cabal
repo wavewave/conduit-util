@@ -1,12 +1,13 @@
 Name:		enumerator-util
-Version:	0.0
+Version:	0.0.1.0
 Synopsis:	utility functions for enumerator library
 Description: 	utility functions for enumerator library 
 License: 	BSD3
 License-file:	LICENSE
 Author:		Ian-Woo Kim
 Maintainer: 	Ian-Woo Kim <ianwookim@gmail.com>
-Build-Depends:	base>4, enumerator>0.4, mtl>2
+Build-Depends:	base>4, enumerator>0.4, mtl>2, xml-enumerator, bytestring>0.9, 
+                xml-types>=0.3, transformers
 Build-Type: 	Simple
 
 hs-source-dirs: src
@@ -15,4 +16,7 @@ ghc-prof-options: -caf-all -auto-all
 
 Exposed-Modules: 
                  Data.Enumerator.Util
+                 Text.XML.Enumerator.Parse.Util 
+
+
 		 

@@ -45,3 +45,14 @@ enumZip x y = continue step
 {-# INLINE enumZip #-}
 
 
+enumZip3 :: (Monad m) => Iteratee s m a -> Iteratee s m b -> Iteratee s m c 
+            -> Iteratee s m (a,b,c)
+enumZip3 a b c = enumZip a (enumZip b c) >>= \(r1,(r2,r3)) -> return (r1,r2,r3)
+
+enumZip4 :: (Monad m) => Iteratee s m a 
+         -> Iteratee s m b 
+         -> Iteratee s m c 
+         -> Iteratee s m d  
+         -> Iteratee s m (a,b,c,d)
+enumZip4 a b c d = enumZip a (enumZip3 b c d) >>= \(r1,(r2,r3,r4)) -> return (r1,r2,r3,r4)
+
