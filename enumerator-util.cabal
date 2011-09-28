@@ -17,6 +17,8 @@ ghc-prof-options: -caf-all -auto-all
 Exposed-Modules: 
                  Data.Enumerator.Util
                  Data.Enumerator.Util.Count
+                 Data.Enumerator.Util.Control
+                 Data.Enumerator.Util.Print 
                  Text.XML.Enumerator.Parse.Util 
 
 
