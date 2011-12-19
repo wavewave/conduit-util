@@ -1,7 +1,7 @@
 module Text.XML.Enumerator.Parse.Util where
 
 import Data.XML.Types
-import Text.XML.Enumerator.Parse
+import Text.XML.Stream.Parse
 
 import Control.Monad.IO.Class
 import Data.Enumerator
@@ -12,7 +12,8 @@ import System.IO
 
 parseXmlFile :: (MonadIO m) => Handle -> (Iteratee Event m a) -> m a
 parseXmlFile h iter = do 
-  run_ $ enumHandle 4096 h $$ joinI $ parseBytes decodeEntities $$ iter
+  run_ $ enumHandle 4096 h $$ joinI $ parseBytes def $$ iter
+--  run_ $ enumHandle 4096 h $$ joinI $ parseBytes decodeEntities $$ iter
 
 --  x <- liftIO $ run_ $ enumFile fn $$ 
 --  return x 
