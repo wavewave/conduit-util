@@ -6,6 +6,7 @@ import Control.Monad
 import Control.Monad.Trans
 
 import Data.Enumerator 
+import qualified Data.Enumerator.List as EL
 import Data.Monoid 
  
 import Prelude hiding (head)
@@ -55,4 +56,11 @@ enumZip4 :: (Monad m) => Iteratee s m a
          -> Iteratee s m d  
          -> Iteratee s m (a,b,c,d)
 enumZip4 a b c d = enumZip a (enumZip3 b c d) >>= \(r1,(r2,r3,r4)) -> return (r1,r2,r3,r4)
+
+
+
+zipStreamWithList :: (Monad m) => [a] -> Enumeratee s (Maybe (a,s)) m b 
+zipStreamWithList lst = EL.mapAccum f lst 
+  where f [] y = ([],Nothing)
+        f (x:xs) y = (xs,Just (x,y))
 
