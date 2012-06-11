@@ -1,18 +1,19 @@
-module Text.XML.Enumerator.Parse.Util where
+module Text.XML.Conduit.Parse.Util where
 
 import Data.XML.Types
 import Text.XML.Stream.Parse
 
 import Control.Monad.IO.Class
-import Data.Enumerator
-import Data.Enumerator.Binary
+import Data.Conduit
+import Data.Conduit.Binary
 
 import System.IO
 
 
-parseXmlFile :: (MonadIO m) => Handle -> (Iteratee Event m a) -> m a
-parseXmlFile h iter = do 
-  run_ $ enumHandle 4096 h $$ joinI $ parseBytes def $$ iter
+parseXmlFile :: (MonadThrow m, MonadIO m) => Handle -> (Sink Event m a) -> m a
+parseXmlFile h iter = sourceHandle h $$ parseBytes def =$ iter 
+-- do 
+--   run_ $ enumHandle 4096 h $$ joinI $ parseBytes def $$ iter
 --  run_ $ enumHandle 4096 h $$ joinI $ parseBytes decodeEntities $$ iter
 
 --  x <- liftIO $ run_ $ enumFile fn $$ 
