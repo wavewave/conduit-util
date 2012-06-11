@@ -68,7 +68,7 @@ dropWhile p =
            | otherwise = Done Nothing ()
     close = return ()  
      
--- | takeWhile for Listlike conduit
+-- | takeWhile in stream for Listlike conduit
 
 takeWhile :: Monad m => (a -> Bool) -> Conduit a m a 
 takeWhile p = NeedInput push close
@@ -76,6 +76,22 @@ takeWhile p = NeedInput push close
           | p x = HaveOutput (NeedInput push close) (return ()) x
           | otherwise = Done Nothing ()
         close = mempty
+
+-- | takeWhile in result for Listlike conduit
+
+takeWhileR :: Monad m => (a -> Bool) -> Sink a m [a]
+takeWhileR p = go p id 
+  where 
+    go p front = NeedInput (push p front) (return $ front [])
+ 
+    push p front x 
+        | p x = NeedInput (push p front') (return $ front' [])
+        | otherwise = Done Nothing (front [])
+      where front' = front . (x:) 
+
+     
+
+
 
 
 -- | make a new source zipped with a list
