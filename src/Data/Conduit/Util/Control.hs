@@ -1,14 +1,16 @@
---
+-----------------------------------------------------------------------------
+-- |
 -- Module      : Data.Conduit.Util.Control
--- Copyright   : (c) 2011,2012 Ian-Woo Kim
--- 
+-- Copyright   : (c) 2011, 2012 Ian-Woo Kim
+--
 -- License     : BSD3
--- Maintainer  : ianwookim@gmail.com
+-- Maintainer  : Ian-Woo Kim <ianwookim@gmail.com>
 -- Stability   : experimental
 -- Portability : GHC
 --
--- Some Control Conduit 
+-- Some Control Conduit
 --
+-----------------------------------------------------------------------------
 
 module Data.Conduit.Util.Control where
 
