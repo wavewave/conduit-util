@@ -5,7 +5,7 @@ import Control.Monad.Identity
 import Control.Monad.State
 import Data.Conduit 
 import Data.Conduit.List hiding (zip,take)
-import Data.Conduit.Util.Control
+import Data.Conduit.Util.Control as CU 
 import Data.Conduit.Util.Count 
 import System.Exit (exitFailure, exitSuccess)
 
@@ -22,6 +22,7 @@ main = do
 
 testNonIO :: Maybe () 
 testNonIO = do 
+  guard test_dropWhile 
   guard test_zipStreamWithList 
   guard test_takeFirstN
   guard test_zipSink3
@@ -33,6 +34,18 @@ testIO = do
   liftIO test_countIter >>=  guard 
 
 -- | 
+
+test_dropWhile :: Bool
+test_dropWhile = 
+    trace ("r = " ++ show r ++ ", e = " ++ show e  ) $ 
+      r == e
+  where
+    lst1 = [1..10] 
+    src1 = sourceList lst1 
+    r = runIdentity (src1 $$ (CU.dropWhile (<5) >> consume))
+    e = Prelude.dropWhile (<5) lst1
+
+-- |
 
 test_zipStreamWithList :: Bool
 test_zipStreamWithList  = 

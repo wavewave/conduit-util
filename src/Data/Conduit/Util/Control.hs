@@ -67,7 +67,7 @@ dropWhile p =
     NeedInput push close 
   where
     push b | p b = dropWhile p 
-           | otherwise = Done Nothing ()
+           | otherwise = Done (Just b) ()
     close = return ()  
      
 -- | takeWhile in stream for Listlike conduit
