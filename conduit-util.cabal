@@ -4,23 +4,34 @@ Synopsis:	utility functions for conduit and related packages
 Description: 	utility functions for conduit and related packages
 License: 	BSD3
 License-file:	LICENSE
+Cabal-Version:  >= 1.9.2
 Author:		Ian-Woo Kim
 Maintainer: 	Ian-Woo Kim <ianwookim@gmail.com>
-Build-Depends:	base>4, 
-                conduit == 0.4.*, 
-                mtl == 2.*, 
-                xml-conduit == 0.7.*, 
-                bytestring == 0.9.*, 
-                xml-types == 0.3.*, 
-                transformers == 0.3.*, 
-                HEPUtil >= 0.1.999 && < 0.3 
 Build-Type: 	Simple
 
-hs-source-dirs: src
-ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
-ghc-prof-options: -caf-all -auto-all
+Test-suite test-conduit-util 
+  type:           exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is:        test-conduit-util.hs
+  build-depends:  base>4,
+                  mtl == 2.*,
+                  conduit == 0.4.*, 
+                  conduit-util
 
-Exposed-Modules: 
+Library 
+  Build-Depends: base>4, 
+                 conduit == 0.4.*, 
+                 mtl == 2.*, 
+                 xml-conduit == 0.7.*, 
+                 bytestring == 0.9.*, 
+                 xml-types == 0.3.*, 
+                 transformers == 0.3.*, 
+                 HEPUtil >= 0.1.999 && < 0.3 
+  hs-source-dirs: src
+  ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
+  ghc-prof-options: -caf-all -auto-all
+
+  Exposed-Modules: 
                  Data.Conduit.Util.Count
                  Data.Conduit.Util.Control
                  Data.Conduit.Util.Print 

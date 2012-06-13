@@ -91,20 +91,11 @@ takeWhileR p = go p id
         | otherwise = Done Nothing (front [])
       where front' = front . (x:) 
 
-     
-
-
-
-
 -- | make a new source zipped with a list
 
 zipStreamWithList :: (Monad m) => [a] -> Source m s -> Source m (a,s) 
 zipStreamWithList lst osrc = CL.zip lsrc osrc 
   where lsrc = CL.sourceList lst 
-
--- CL.mapAccum f lst 
---  where f [] y = ([],Nothing)
---        f (x:xs) y = (xs,Just (x,y))
 
 -- | take first N elements as a new conduit
 
@@ -114,21 +105,9 @@ takeFirstN n = NeedInput (push n) close
         push c x = HaveOutput (NeedInput (push (c-1)) close) (return ()) x
         close = mempty
 
-{-
-takeSampleNConduit :: (Monad m) => Int -> Conduit s m s
-takeSampleNConduit n = 
+-- | 
 
-checkDone (continue . (step n)) where
-  step _ k EOF = yield (Continue k) EOF
-  step num k (Chunks xs) = loop num k xs 
-
-  loop num k [] | num > 0 = continue (step num k)
-  loop num k (x:xs) | num > 0 = do 
-    k (Chunks [x]) >>== 
-      checkDoneEx (Chunks xs) (\k' -> loop (num-1) k' xs)
-  loop _ k _ | otherwise = yield (Continue k) EOF
--}
-
-
+zipSinks3 :: Monad m => Sink i m r -> Sink i m r' -> Sink i m r'' -> Sink i m (r,r',r'') 
+zipSinks3 s1 s2 s3 = fmap (\((x,y),z) -> (x,y,z)) (s1 `CL.zipSinks` s2 `CL.zipSinks` s3)
 
 
