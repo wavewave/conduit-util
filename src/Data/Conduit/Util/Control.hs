@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 -----------------------------------------------------------------------------
 -- |
 -- Module      : Data.Conduit.Util.Control
@@ -8,17 +10,22 @@
 -- Stability   : experimental
 -- Portability : GHC
 --
--- Some Control Conduit
+-- Some utility functions for conduit control
 --
 -----------------------------------------------------------------------------
 
 module Data.Conduit.Util.Control where
 
-import Data.Conduit
-import qualified Data.Conduit.List as CL
-import Data.Monoid
-import Control.Monad.IO.Class
-import Prelude hiding (dropWhile,takeWhile)
+import           Control.Applicative
+import           Control.Monad.Maybe
+import           Control.Monad.IO.Class
+import           Control.Monad.Trans
+import           Data.Conduit
+import           Data.Conduit.List as CL hiding (mapM)
+import           Data.Conduit.Util as CU
+import qualified Data.IntMap as IM
+import           Data.Monoid
+import           Prelude hiding (dropWhile,takeWhile)
 
 -- | 
 
@@ -60,54 +67,125 @@ doBranch criterion taction faction = do
 -- stream mapping
 --------------------------------- 
 
+
+
 -- | dropWhile for Listlike conduit 
 
 dropWhile :: Monad m => (a -> Bool) -> Sink a m () 
-dropWhile p = 
-    NeedInput push close 
-  where
-    push b | p b = dropWhile p 
-           | otherwise = Done (Just b) ()
-    close = return ()  
-     
+dropWhile p = do mr <- await 
+                 case mr of 
+                   Nothing -> return () 
+                   Just r -> if p r then dropWhile p else (leftover r >> return ())
+
+
+    
 -- | takeWhile in stream for Listlike conduit
 
 takeWhile :: Monad m => (a -> Bool) -> Conduit a m a 
-takeWhile p = NeedInput push close
-  where push x 
-          | p x = HaveOutput (NeedInput push close) (return ()) x
-          | otherwise = Done Nothing ()
-        close = mempty
-
--- | takeWhile in result for Listlike conduit
+takeWhile p = do mr <- await 
+                 case mr of 
+                   Nothing -> return ()
+                   Just r -> if p r then (yield r >> takeWhile p) else return ()
+                             
+-- | takeWhile in result for Listlike conduit, returning the resultant list
 
 takeWhileR :: Monad m => (a -> Bool) -> Sink a m [a]
-takeWhileR p = go p id 
-  where 
-    go p front = NeedInput (push p front) (return $ front [])
- 
-    push p front x 
-        | p x = NeedInput (push p front') (return $ front' [])
-        | otherwise = Done Nothing (front [])
-      where front' = front . (x:) 
+takeWhileR p = go p id
+  where go p front = do mr <- await 
+                        case mr of 
+                          Nothing -> return $ front [] 
+                          Just r -> if p r then go p (front.(r:)) else return (front [])
 
 -- | make a new source zipped with a list
 
 zipStreamWithList :: (Monad m) => [a] -> Source m s -> Source m (a,s) 
-zipStreamWithList lst osrc = CL.zip lsrc osrc 
+zipStreamWithList lst osrc = CU.zip lsrc osrc 
   where lsrc = CL.sourceList lst 
+
 
 -- | take first N elements as a new conduit
 
-takeFirstN :: (Monad m) => Int -> Conduit s m s 
-takeFirstN n = NeedInput (push n) close
-  where push 0 x = Done Nothing () 
-        push c x = HaveOutput (NeedInput (push (c-1)) close) (return ()) x
-        close = mempty
+takeFirstN :: Monad m => Int -> Conduit s m s 
+takeFirstN n 
+  | n > 0 = await >>= maybe (return ()) (\r -> yield r >> takeFirstN (n-1))
+  | otherwise = return ()
+
 
 -- | 
 
 zipSinks3 :: Monad m => Sink i m r -> Sink i m r' -> Sink i m r'' -> Sink i m (r,r',r'') 
-zipSinks3 s1 s2 s3 = fmap (\((x,y),z) -> (x,y,z)) (s1 `CL.zipSinks` s2 `CL.zipSinks` s3)
+zipSinks3 s1 s2 s3 = fmap (\((x,y),z) -> (x,y,z)) (s1 `CU.zipSinks` s2 `CU.zipSinks` s3)
 
+-- | zip a list of sources 
 
+zipN :: Monad m => [Source m a] -> Source m [a]
+zipN = foldr f z0
+  where z0 = CL.sourceList (repeat [])
+
+        f :: Monad m => Source m a -> Source m [a] -> Source m [a]
+        f s1 s2 = CU.zip s1 s2 =$= CL.map (\(x,xs)-> x:xs) 
+
+-- | 
+
+getResumableSource :: (Monad m) => Source m a -> m (ResumableSource m a)
+getResumableSource s =  (s $$+ return ()) >>= return . fst 
+ 
+-- | 
+
+zip2 :: forall m a b. (Monad m) => (Source m a,Source m b) -> Source m (a,b) 
+zip2 (s1,s2) = do rs1 <- lift $ getResumableSource s1
+                  rs2 <- lift $ getResumableSource s2 
+                  zip2wrk (rs1,rs2)
+  where zip2wrk :: (ResumableSource m a,ResumableSource m b) 
+                -> Source m (a,b)
+        zip2wrk (rs1,rs2) = do 
+          (rs1',mr1) <- lift (rs1 $$++ await)
+          (rs2',mr2) <- lift (rs2 $$++ await)
+          case (,) <$> mr1 <*> mr2 of 
+            Just r -> do yield r 
+                         zip2wrk (rs1',rs2')
+            Nothing -> return () 
+
+-- | switch from source A or from source B by boolean condition source
+
+switch2 :: forall m a. (Monad m) => 
+           Source m Bool -> (Source m a, Source m a) -> Source m a
+switch2 sw (s1,s2) = do rs1 <- lift $ getResumableSource s1 
+                        rs2 <- lift $ getResumableSource s2 
+                        sw =$= switch2conduit (rs1,rs2) 
+  where switch2conduit :: (ResumableSource m a,ResumableSource m a) -> Conduit Bool m a 
+        switch2conduit (rs1,rs2) = do 
+            mf <- await
+            case mf of 
+              Nothing -> return ()
+              Just f  -> if f 
+                         then do (rs1',mr1) <- lift (rs1 $$++ await) 
+                                 maybe (return ()) 
+                                       (\r -> yield r >> switch2conduit (rs1',rs2))
+                                       mr1 
+                         else do (rs2',mr2) <- lift (rs2 $$++ await)
+                                 maybe (return ())
+                                       (\r -> yield r >> switch2conduit (rs1,rs2'))
+                                       mr2 
+
+-- | 
+
+switchMap :: forall m a. (Monad m) => 
+             Source m Int -> [(Int,Source m a)] -> Source m a
+switchMap sw lst = do rlst <- mapM getResSrcAssocList lst
+                      let rmap = IM.fromList rlst
+                      sw =$= (runMaybeT (swMapConduitAction rmap) >> return ())
+  where getResSrcAssocList (x,y) = do 
+            y' <- (lift . getResumableSource) y 
+            return (x,y')
+        swMapConduitAction :: IM.IntMap (ResumableSource m a) 
+                           -> MaybeT (Pipe Int Int a () m) ()
+        swMapConduitAction rmap = do
+            k <- MaybeT await 
+            rs <- MaybeT . return $ IM.lookup k rmap
+            (rs1',mr1) <- (lift. lift) (rs $$++ await)
+            r1 <- MaybeT . return $ mr1 
+            lift (yield r1)
+            let rmap' = IM.adjust (const rs1') k rmap 
+            swMapConduitAction rmap'
+            return ()

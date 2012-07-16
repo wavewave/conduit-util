@@ -4,7 +4,7 @@ import Control.Monad.Error
 import Control.Monad.Identity
 import Control.Monad.State
 import Data.Conduit 
-import Data.Conduit.List hiding (zip,take)
+import Data.Conduit.List hiding (take)
 import Data.Conduit.Util.Control as CU 
 import Data.Conduit.Util.Count 
 import System.Exit (exitFailure, exitSuccess)
@@ -23,6 +23,8 @@ main = do
 testNonIO :: Maybe () 
 testNonIO = do 
   guard test_dropWhile 
+  guard test_takeWhile 
+  guard test_takeWhileR
   guard test_zipStreamWithList 
   guard test_takeFirstN
   guard test_zipSink3
@@ -32,6 +34,16 @@ testNonIO = do
 testIO :: ErrorT String IO () 
 testIO = do 
   liftIO test_countIter >>=  guard 
+
+-- | 
+
+test_countIter :: IO Bool 
+test_countIter = do  
+    r <- evalStateT (sourceList lst1 $$ countIter) (0::Int)
+    return (r == length lst1)
+  where 
+    lst1 = [1..10]
+
 
 -- | 
 
@@ -46,6 +58,33 @@ test_dropWhile =
     e = Prelude.dropWhile (<5) lst1
 
 -- |
+
+test_takeWhile :: Bool 
+test_takeWhile = 
+    trace ("r = " ++ show r ++ ", e = " ++ show e) $ 
+      r == e 
+  where 
+    lst1 = [1..10] 
+    src1 = sourceList lst1 
+    r = runIdentity (src1 $$ (CU.takeWhile (<5) =$ consume))
+    e = Prelude.takeWhile (<5) lst1
+    
+
+-- |
+
+test_takeWhileR :: Bool 
+test_takeWhileR = 
+    trace ("r = " ++ show r ++ ", e = " ++ show e) $ 
+      r == e 
+  where 
+    lst1 = [1..10] 
+    src1 = sourceList lst1 
+    r = runIdentity (src1 $$ CU.takeWhileR (<5) )
+    e = Prelude.takeWhile (<5) lst1
+    
+
+
+-- | 
 
 test_zipStreamWithList :: Bool
 test_zipStreamWithList  = 
@@ -73,12 +112,4 @@ test_zipSink3 = r == (lst1,sum lst1,product lst1)
     sink3 = fold (*) 1 
     r = runIdentity (sourceList lst1 $$ zipSinks3 sink1 sink2 sink3)
 
--- | 
-
-test_countIter :: IO Bool 
-test_countIter = do  
-    r <- evalStateT (sourceList lst1 $$ countIter) (0::Int)
-    return (r == length lst1)
-  where 
-    lst1 = [1..10]
 

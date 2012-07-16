@@ -1,5 +1,5 @@
 Name:		conduit-util
-Version:	0.2
+Version:	0.2.0.999
 Synopsis:	utility functions for conduit and related packages
 Description: 	utility functions for conduit and related packages
 License: 	BSD3
@@ -15,14 +15,16 @@ Test-suite test-conduit-util
   main-is:        test-conduit-util.hs
   build-depends:  base>4,
                   mtl == 2.*,
-                  conduit == 0.4.*, 
+                  conduit == 0.5.*, 
                   conduit-util
 
 Library 
-  Build-Depends: base>4, 
-                 conduit == 0.4.*, 
+  Build-Depends: base>4,
+                 containers == 0.4.*, 
+                 conduit == 0.5.*, 
                  mtl == 2.*, 
-                 xml-conduit == 0.7.*, 
+                 MaybeT == 0.1.*,
+                 xml-conduit == 1.0.*, 
                  bytestring == 0.9.*, 
                  xml-types == 0.3.*, 
                  transformers == 0.3.*, 
