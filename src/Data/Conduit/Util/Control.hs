@@ -21,11 +21,12 @@ import           Control.Monad.Maybe
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans
 import           Data.Conduit
-import           Data.Conduit.List as CL hiding (mapM)
+import           Data.Conduit.List as CL hiding (mapM,sequence)
 import           Data.Conduit.Util as CU
 import qualified Data.IntMap as IM
 import           Data.Monoid
-import           Prelude hiding (dropWhile,takeWhile)
+import           Data.Void
+import           Prelude hiding (dropWhile,takeWhile,sequence)
 
 -- | 
 
@@ -189,3 +190,11 @@ switchMap sw lst = do rlst <- mapM getResSrcAssocList lst
             let rmap' = IM.adjust (const rs1') k rmap 
             swMapConduitAction rmap'
             return ()
+
+-- | 
+
+sequence :: Monad m => Sink a m b -> Conduit a m b
+sequence s = do mr <- peek 
+                case mr of 
+                  Nothing -> return () 
+                  Just r -> (mapOutput absurd s >>= yield) >> sequence s 
