@@ -1,5 +1,11 @@
 #!/bin/bash 
 
+sudo apt-get install libblas-dev
+sudo apt-get install liblapack-dev
+sudo apt-get install libgsl0-dev
+
+cabal install hmatrix 
+
 ghc-pkg list
 mkdir deps
 git clone https://github.com/wavewave/devadmin.git deps/devadmin
