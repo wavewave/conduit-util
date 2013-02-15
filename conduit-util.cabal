@@ -14,22 +14,22 @@ Test-suite test-conduit-util
   hs-source-dirs: test
   main-is:        test-conduit-util.hs
   build-depends:  base>4,
-                  mtl == 2.*,
-                  conduit == 0.5.*, 
+                  mtl > 2,
+                  conduit > 0.4,
                   conduit-util
 
 Library 
   Build-Depends: base>4,
-                 containers == 0.4.*, 
-                 conduit == 0.5.*, 
-                 mtl == 2.*, 
-                 MaybeT == 0.1.*,
-                 xml-conduit == 1.0.*, 
-                 bytestring == 0.9.*, 
-                 xml-types == 0.3.*, 
-                 transformers == 0.3.*, 
+                 containers > 0.4, 
+                 conduit > 0.5, 
+                 mtl > 2, 
+                 MaybeT > 0.1,
+                 xml-conduit > 1.0, 
+                 bytestring > 0.9, 
+                 xml-types > 0.3, 
+                 transformers > 0.3 , 
                  HEPUtil >= 0.1.999 && < 0.3, 
-                 void == 0.5.*
+                 void > 0.5
   hs-source-dirs: src
   ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
