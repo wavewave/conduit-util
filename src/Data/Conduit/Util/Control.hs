@@ -43,7 +43,7 @@ doNIter n action
 
 -- | 
 doBranch :: (MonadIO m) => 
-            (s ->Bool) 
+            (s -> Bool) 
          -> (s -> IO ())  -- ^ true action 
          -> (s -> IO ())  -- ^ false action 
          -> Sink s m ()
@@ -56,6 +56,17 @@ doBranch criterion taction faction = do
                         doBranch criterion taction faction 
                 )
   
+
+-- | 
+doBranchE :: (MonadIO m) => 
+            (s -> Either r r') 
+         -> (r -> IO ())  -- ^ left action 
+         -> (r' -> IO ())  -- ^ right action 
+         -> Sink s m ()
+doBranchE criterion laction raction = do 
+    awaitForever $ liftIO . either laction raction . criterion
+
+
 ---------------------------------
 -- stream mapping
 --------------------------------- 
