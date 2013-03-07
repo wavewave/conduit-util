@@ -3,7 +3,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      : Data.Conduit.Util.Control
--- Copyright   : (c) 2011, 2012 Ian-Woo Kim
+-- Copyright   : (c) 2011-2013 Ian-Woo Kim
 --
 -- License     : BSD3
 -- Maintainer  : Ian-Woo Kim <ianwookim@gmail.com>
@@ -24,8 +24,8 @@ import           Data.Conduit
 import           Data.Conduit.List as CL hiding (mapM,sequence)
 import           Data.Conduit.Util as CU
 import qualified Data.IntMap as IM
-import           Data.Monoid
 import           Data.Void
+-- 
 import           Prelude hiding (dropWhile,takeWhile,sequence)
 
 -- | 
@@ -42,7 +42,6 @@ doNIter n action
   | otherwise = return () 
 
 -- | 
-
 doBranch :: (MonadIO m) => 
             (s -> (Bool,s')) 
              -> (s' -> IO ()) 
@@ -71,7 +70,6 @@ doBranch criterion taction faction = do
 
 
 -- | dropWhile for Listlike conduit 
-
 dropWhile :: Monad m => (a -> Bool) -> Sink a m () 
 dropWhile p = do mr <- await 
                  case mr of 
@@ -81,21 +79,24 @@ dropWhile p = do mr <- await
 
     
 -- | takeWhile in stream for Listlike conduit
-
 takeWhile :: Monad m => (a -> Bool) -> Conduit a m a 
-takeWhile p = do mr <- await 
-                 case mr of 
-                   Nothing -> return ()
-                   Just r -> if p r then (yield r >> takeWhile p) else return ()
+takeWhile p = 
+    await >>= maybe (return ()) 
+                (\r -> if p r 
+                       then (yield r >> takeWhile p) 
+                       else leftover r >> return ()
+                )
                              
 -- | takeWhile in result for Listlike conduit, returning the resultant list
 
 takeWhileR :: Monad m => (a -> Bool) -> Sink a m [a]
-takeWhileR p = go p id
-  where go p front = do mr <- await 
-                        case mr of 
-                          Nothing -> return $ front [] 
-                          Just r -> if p r then go p (front.(r:)) else return (front [])
+takeWhileR q = go q id
+  where go p front = 
+          await >>= maybe (return (front []))
+                      (\r -> if p r 
+                               then go p (front.(r:)) 
+                               else leftover r >> return (front [])
+                      )
 
 -- | make a new source zipped with a list
 
@@ -194,7 +195,6 @@ switchMap sw lst = do rlst <- mapM getResSrcAssocList lst
 -- | 
 
 sequence :: Monad m => Sink a m b -> Conduit a m b
-sequence s = do mr <- peek 
-                case mr of 
-                  Nothing -> return () 
-                  Just r -> (mapOutput absurd s >>= yield) >> sequence s 
+sequence s = 
+    peek >>= maybe (return ())
+               (const ((mapOutput absurd s >>= yield) >> sequence s))

@@ -19,18 +19,18 @@ main = do
   runErrorT testIO >>= either (const exitFailure) (const exitSuccess) 
 
 -- | 
-
 testNonIO :: Maybe () 
 testNonIO = do 
   guard test_dropWhile 
   guard test_takeWhile 
+  guard test_takeWhile_2
   guard test_takeWhileR
+  guard test_takeWhileR_2 
   guard test_zipStreamWithList 
   guard test_takeFirstN
   guard test_zipSink3
 
 -- | 
-
 testIO :: ErrorT String IO () 
 testIO = do 
   liftIO test_countIter >>=  guard 
@@ -68,10 +68,23 @@ test_takeWhile =
     src1 = sourceList lst1 
     r = runIdentity (src1 $$ (CU.takeWhile (<5) =$ consume))
     e = Prelude.takeWhile (<5) lst1
-    
+
 
 -- |
 
+test_takeWhile_2 :: Bool 
+test_takeWhile_2 = 
+    trace ("r = " ++ show r ++ ", e = " ++ show e) $ 
+      r == e 
+  where 
+    lst1 = [1..10] 
+    src1 = sourceList lst1 
+    r = runIdentity (src1 $$ ((CU.takeWhile (<5) >> CU.takeWhile (<8)) =$ consume))
+    e = Prelude.takeWhile (<8) lst1
+
+    
+
+-- |
 test_takeWhileR :: Bool 
 test_takeWhileR = 
     trace ("r = " ++ show r ++ ", e = " ++ show e) $ 
@@ -81,7 +94,21 @@ test_takeWhileR =
     src1 = sourceList lst1 
     r = runIdentity (src1 $$ CU.takeWhileR (<5) )
     e = Prelude.takeWhile (<5) lst1
-    
+ 
+-- |
+test_takeWhileR_2 :: Bool 
+test_takeWhileR_2 = 
+    trace ("r = " ++ show r ++ ", e = " ++ show e) $ 
+      r == e 
+  where 
+    lst1 = [1..10] 
+    src1 = sourceList lst1 
+    r = runIdentity (src1 $$ (do xs <- CU.takeWhileR (<5) 
+                                 ys <- CU.takeWhileR (<8)
+                                 return (xs ++ ys)))
+    e = Prelude.takeWhile (<8) lst1
+ 
+   
 
 
 -- | 
