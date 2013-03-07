@@ -43,25 +43,18 @@ doNIter n action
 
 -- | 
 doBranch :: (MonadIO m) => 
-            (s -> (Bool,s')) 
-             -> (s' -> IO ()) 
-             -> (s' -> IO ()) 
-             -> Sink (Maybe s) m ()
+            (s ->Bool) 
+         -> (s -> IO ())  -- ^ true action 
+         -> (s -> IO ())  -- ^ false action 
+         -> Sink s m ()
 doBranch criterion taction faction = do 
-    elm <- CL.head
-    case elm of 
-      Nothing -> return ()
-      Just maybec -> do 
-        case maybec of 
-          Just c -> do 
-            let (b,c') = criterion c 
-            if b 
-              then liftIO $ taction c'
-              else liftIO $ faction c'
-          Nothing -> do 
-            liftIO $ putStrLn "what?"
-            return ()
-        doBranch criterion taction faction 
+    await >>= maybe (return ()) 
+                (\c->do let b = criterion c 
+                        if b 
+                          then liftIO $ taction c
+                          else liftIO $ faction c
+                        doBranch criterion taction faction 
+                )
   
 ---------------------------------
 -- stream mapping
