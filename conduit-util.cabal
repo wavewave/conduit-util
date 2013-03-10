@@ -1,5 +1,5 @@
 Name:		conduit-util
-Version:	0.2.999
+Version:	0.999
 Synopsis:	utility functions for conduit and related packages
 Description: 	utility functions for conduit and related packages
 License: 	BSD3
@@ -21,14 +21,14 @@ Test-suite test-conduit-util
 Library 
   Build-Depends: base>4,
                  containers > 0.4, 
-                 conduit > 0.5, 
+                 conduit > 1, 
                  mtl > 2, 
                  MaybeT > 0.1,
                  xml-conduit > 1.0, 
                  bytestring > 0.9, 
                  xml-types > 0.3, 
                  transformers > 0.3 , 
-                 HEPUtil >= 0.1.999 && < 0.3, 
+                 HEPUtil >= 0.999, 
                  void > 0.5
   hs-source-dirs: src
   ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind

@@ -174,8 +174,8 @@ switch2 sw (s1,s2) = do rs1 <- lift $ getResumableSource s1
                                        (\r -> yield r >> switch2conduit (rs1,rs2'))
                                        mr2 
 
+{-
 -- | 
-
 switchMap :: forall m a. (Monad m) => 
              Source m Int -> [(Int,Source m a)] -> Source m a
 switchMap sw lst = do rlst <- mapM getResSrcAssocList lst
@@ -195,6 +195,7 @@ switchMap sw lst = do rlst <- mapM getResSrcAssocList lst
             let rmap' = IM.adjust (const rs1') k rmap 
             swMapConduitAction rmap'
             return ()
+-}
 
 -- | 
 
