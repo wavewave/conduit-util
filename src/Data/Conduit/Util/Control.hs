@@ -3,7 +3,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      : Data.Conduit.Util.Control
--- Copyright   : (c) 2011-2013 Ian-Woo Kim
+-- Copyright   : (c) 2011-2014 Ian-Woo Kim
 --
 -- License     : BSD3
 -- Maintainer  : Ian-Woo Kim <ianwookim@gmail.com>
@@ -22,7 +22,7 @@ import           Control.Monad.IO.Class
 import           Control.Monad.Trans
 import           Data.Conduit
 import           Data.Conduit.List as CL hiding (mapM,sequence)
-import           Data.Conduit.Util as CU
+import qualified Data.Conduit.Internal as CU
 import qualified Data.IntMap as IM
 import           Data.Void
 -- 
@@ -105,7 +105,7 @@ takeWhileR q = go q id
 -- | make a new source zipped with a list
 
 zipStreamWithList :: (Monad m) => [a] -> Source m s -> Source m (a,s) 
-zipStreamWithList lst osrc = CU.zip lsrc osrc 
+zipStreamWithList lst osrc = CU.zipSources lsrc osrc 
   where lsrc = CL.sourceList lst 
 
 
@@ -129,7 +129,7 @@ zipN = foldr f z0
   where z0 = CL.sourceList (repeat [])
 
         f :: Monad m => Source m a -> Source m [a] -> Source m [a]
-        f s1 s2 = CU.zip s1 s2 =$= CL.map (\(x,xs)-> x:xs) 
+        f s1 s2 = CU.zipSources s1 s2 =$= CL.map (\(x,xs)-> x:xs) 
 
 -- | 
 
