@@ -26,7 +26,6 @@ Library
                  containers > 0.4, 
                  exceptions >= 0.5,
                  HEPUtil >= 0.999, 
-                 MaybeT > 0.1,
                  mtl > 2, 
                  transformers > 0.3 , 
                  void > 0.5,
