@@ -17,9 +17,10 @@
 module Data.Conduit.Util.Control where
 
 import           Control.Applicative
-import           Control.Monad.Maybe
+-- import           Control.Monad.Maybe
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans
+import           Control.Monad.Trans.Maybe
 import           Data.Conduit
 import           Data.Conduit.List as CL hiding (mapM,sequence)
 import qualified Data.Conduit.Internal as CU
